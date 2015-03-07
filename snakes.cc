@@ -1,9 +1,10 @@
-#include <GL/glut.h>
+#include <GLUT/glut.h>
 #include <cmath>
 #include <cstdio>
 #include <memory>
 #include <vector>
 #include <string>
+#include <stdlib.h> 
 
 constexpr float kColorBlack[] = {0, 0, 0};
 constexpr float kColorWhite[] = {1, 1, 1};
@@ -40,6 +41,7 @@ void draw_rectangle(int x, int y, const float* color) {
   glEnd();
 }
 
+// This is called every 200 ms (.2 seconds)
 void Timer(int value) {
   for (int i = 0; i < 2; i++) {
     Block new_block = snake[i].back();
@@ -59,30 +61,38 @@ void Timer(int value) {
         break;
     }
 
+    /* If the worm hits the edge game ends */
     if (new_block.y == -1 || new_block.y == 40 || new_block.x == -1 ||
         new_block.x == 40) {
       in_game = false;
     }
 
+    // Remove the [0] element.
     snake[i].erase(snake[i].begin());
+    // Add the new block to the end of the vector.
     snake[i].push_back(new_block);
   }
 
+  // Check if snake 1 runs into snake 0.
   for (auto b : snake[0]) {
     if (snake[1].back().x == b.x && snake[1].back().y == b.y) {
       in_game = false;
     }
   }
 
+  // Check if snake 0 runs into snake 1.
   for (auto b : snake[1]) {
     if (snake[0].back().x == b.x && snake[0].back().y == b.y) {
       in_game = false;
     }
   }
 
+  // If the game is over then don't schedule the timer function again.
   if (in_game) {
     glutTimerFunc(speed, Timer, 0);
   }
+
+  // Schedule the screen to be redrawn.
   glutPostRedisplay();
 }
 
@@ -95,6 +105,7 @@ void SpecialPressed(int key, int x, int y) {
 
 void KeyPressed(unsigned char key, int x, int y) {
   if ('n' == key) {
+    // New Game: Reinitialize the snakes and the timer.
     in_game = true;
     snake[0] = {{3, 5}, {4, 5}, {5, 5}};
     direction[0] = GLUT_KEY_RIGHT;
@@ -120,6 +131,7 @@ void Display() {
   glClearColor(0, 0, 0, 0);
   glClear(GL_COLOR_BUFFER_BIT);
 
+  //green background
   glBegin(GL_QUADS);
   glColor3fv(kColorGreen);
   glVertex2f(1.25, 0.95);
@@ -128,6 +140,7 @@ void Display() {
   glVertex2f(-1.25, 0.95);
   glEnd();
 
+  //blue screen that worms wander in
   glBegin(GL_QUADS);
   glColor3fv(kColorBlue);
   glVertex2f(0.95, 0.95);
@@ -144,8 +157,8 @@ void Display() {
     }
   } else {
     // There is something not quite right about this...
-    const char* str = "Press n";
-    glColor3fv(kColorWhite);
+    const char* str = "Press n"; //this writting on screen
+    glColor3fv(kColorWhite); //in colour white
     glRasterPos2i(0, 0);
     for (size_t i = 0; i < sizeof(str); i++) {
       glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, str[i]);
@@ -172,7 +185,7 @@ void ScreenResized(int w, int h) {
 }
 
 int main(int argc, char** argv) {
-  srand(time(nullptr));
+  srand(time(NULL));
 
   glutInit(&argc, argv);
   glutInitWindowSize(1000, 800);
